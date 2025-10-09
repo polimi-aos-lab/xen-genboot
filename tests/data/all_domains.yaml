@@ -1,0 +1,28 @@
+media:
+  type: mmc
+  number: 1
+dt:
+  file: board-custom.dtb
+  addr: "40MiB"
+xen:
+  file: xen-custom.bin
+  bootargs: "bootscrub=0 iommu=on"
+  addr: "16MiB"
+  colors: ["0-3", "4-5", "6-7", "8-9", "10-11"]
+domains:
+  console:
+    params: { memory: "12MiB", cpus: 1, vpl011: true }
+    kernel: { addr: "56MiB", bootargs: "console=ttyAMA0 root=/dev/vda", file: "console.bin" }
+    dt:     { addr: "72MiB", file: "console.dtb" }
+  storage:
+    params: { memory: "64MiB", cpus: 2, vpl011: false }
+    kernel: { addr: "80MiB", bootargs: "console=ttyS0 rdinit=/bin/sh", file: "storage.bin" }
+    dt:     { addr: "96MiB", file: "storage.dtb" }
+  network:
+    params: { memory: "48MiB", cpus: 3, vpl011: true }
+    kernel: { addr: "104MiB", bootargs: "console=ttyAMA1 ip=dhcp", file: "network.bin" }
+    dt:     { addr: "120MiB", file: "network.dtb" }
+  compute:
+    params: { memory: "128MiB", cpus: 4, vpl011: false }
+    kernel: { addr: "128MiB", bootargs: "console=ttyAMA2 isolcpus=2-3", file: "compute.bin" }
+    dt:     { addr: "144MiB", file: "compute.dtb" }
