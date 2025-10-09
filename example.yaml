@@ -1,0 +1,30 @@
+media:
+  type: mmc
+  number: 0
+dt:
+  file: bcm2712-rpi-5-b.dtb
+  addr: "32MiB"
+xen:
+  file: xen.bin
+  bootargs: "bootscrub=0"
+  addr: "16MiB"
+  colors: ["0-1", "2-5", "2-5", "6-7", "6-7"]
+  bootonly: ["u1", "u2"]
+domains:
+  u1:
+    params: { memory: "10KiB", cpus: 1, vpl011: true }
+    kernel: { addr: "48MiB", bootargs: "console=ttyAMA0", file: "guest1.bin" }
+    dt:     { addr: "64MiB", file: "guest1.dtb" }
+  u2:
+    params: { memory: "10KiB", cpus: 1, vpl011: true }
+    kernel: { addr: "80MiB", bootargs: "console=ttyAMA0", file: "guest1.bin" }
+    dt:     { addr: "96MiB", file: "guest1.dtb" }
+  u3:
+    params: { memory: "10KiB", cpus: 1, vpl011: true }
+    kernel: { addr: "112MiB", bootargs: "console=ttyAMA0", file: "guest1.bin" }
+    dt:     { addr: "128MiB", file: "guest1.dtb" }
+  u4:
+    params: { memory: "10KiB", cpus: 1, vpl011: true }
+    kernel: { addr: "144MiB", bootargs: "console=ttyAMA0", file: "guest1.bin" }
+    dt:     { addr: "160MiB", file: "guest1.dtb" }
+
