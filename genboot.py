@@ -2,7 +2,9 @@
 """
 genboot.py - Generate U-Boot script from YAML configuration for Xen dom0-less boot
 
-Usage: python genboot.py <yaml_file> <directory>
+Usage:
+    python genboot.py <yaml_file> <directory>
+    python genboot.py <directory>  # YAML is read from stdin
 
 This script generates a U-Boot script for booting Xen with dom0-less domains
 based on a YAML configuration file. It loads the necessary files and configures
@@ -57,13 +59,8 @@ def get_file_size(directory, filename):
         return 0x100000
     return os.path.getsize(filepath)
 
-def generate_uboot_script(yaml_file, directory):
+def generate_uboot_script(config, directory):
     """Generate U-Boot script from YAML configuration"""
-
-    # Load YAML configuration
-    with open(yaml_file, 'r') as f:
-        config = yaml.safe_load(f)
-
     script_lines = []
 
     # Load media configuration
@@ -229,15 +226,36 @@ def generate_uboot_script(yaml_file, directory):
     return "\n".join(script_lines)
 
 def main():
-    if len(sys.argv) != 3:
-        print("Usage: python genboot.py <yaml_file> <directory>", file=sys.stderr)
+    args = sys.argv[1:]
+
+    usage_msg = (
+        "Usage:\n"
+        "  python genboot.py <yaml_file> <directory>\n"
+        "  python genboot.py <directory>  # YAML is read from stdin"
+    )
+
+    if len(args) == 2:
+        yaml_file, directory = args
+        if not os.path.exists(yaml_file):
+            print(f"Error: YAML file {yaml_file} not found", file=sys.stderr)
+            sys.exit(1)
+
+        with open(yaml_file, "r", encoding="utf-8") as yaml_stream:
+            config = yaml.safe_load(yaml_stream)
+
+    elif len(args) == 1:
+        directory = args[0]
+        if sys.stdin.isatty():
+            print("Error: No YAML input provided on stdin", file=sys.stderr)
+            sys.exit(1)
+
+        config = yaml.safe_load(sys.stdin)
+    else:
+        print(usage_msg, file=sys.stderr)
         sys.exit(1)
 
-    yaml_file = sys.argv[1]
-    directory = sys.argv[2]
-
-    if not os.path.exists(yaml_file):
-        print(f"Error: YAML file {yaml_file} not found", file=sys.stderr)
+    if config is None:
+        print("Error: YAML configuration is empty", file=sys.stderr)
         sys.exit(1)
 
     if not os.path.isdir(directory):
@@ -245,7 +263,7 @@ def main():
         sys.exit(1)
 
     try:
-        script_content = generate_uboot_script(yaml_file, directory)
+        script_content = generate_uboot_script(config, directory)
         print(script_content)
     except Exception as e:
         print(f"Error generating script: {e}", file=sys.stderr)

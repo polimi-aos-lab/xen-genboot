@@ -11,9 +11,11 @@
 
 ```bash
 python genboot.py example.yaml ./out
+# or read the YAML from stdin
+python genboot.py ./out < example.yaml
 ```
 
-The command reads the YAML file, resolves files from the output directory, and emits the U-Boot script to standard output. Ensure the output directory already contains the artifacts referenced by the configuration (e.g. Xen binary, device trees, kernels, ramdisks), then capture the generated script to a file or pipe it directly into your U-Boot tooling.
+Each command reads the YAML configuration, resolves files from the output directory, and emits the U-Boot script to standard output. Ensure the output directory already contains the artifacts referenced by the configuration (e.g. Xen binary, device trees, kernels, ramdisks), then capture the generated script to a file or pipe it directly into your U-Boot tooling.
 
 ### Configuration
 
