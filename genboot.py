@@ -164,7 +164,7 @@ def generate_uboot_script(config, directory):
 
         # Set memory
         memory = params.get('memory', '64MiB')
-        memory_bytes = parse_address_or_size(memory)
+        memory_bytes = int(parse_address_or_size(memory) / 1024)
         script_lines.append(f"fdt set /chosen/domU{i} memory <0x0 0x{memory_bytes:x}>")
         script_lines.append("")
 
