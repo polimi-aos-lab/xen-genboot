@@ -15,16 +15,19 @@ domains:
     params: { memory: "10KiB", cpus: 1, vpl011: true }
     kernel: { addr: "48MiB", bootargs: "console=ttyAMA0", file: "guest1.bin" }
     dt:     { addr: "64MiB", file: "guest1.dtb" }
+    ramdisk: { addr: "72MiB", file: "guest1.cpio.gz" }
   u2:
     params: { memory: "10KiB", cpus: 1, vpl011: true }
     kernel: { addr: "80MiB", bootargs: "console=ttyAMA0", file: "guest1.bin" }
     dt:     { addr: "96MiB", file: "guest1.dtb" }
+    ramdisk: { addr: "104MiB", file: "guest1.cpio.gz" }
   u3:
     params: { memory: "10KiB", cpus: 1, vpl011: true }
     kernel: { addr: "112MiB", bootargs: "console=ttyAMA0", file: "guest1.bin" }
     dt:     { addr: "128MiB", file: "guest1.dtb" }
+    ramdisk: { addr: "136MiB", file: "guest1.cpio.gz" }
   u4:
     params: { memory: "10KiB", cpus: 1, vpl011: true }
     kernel: { addr: "144MiB", bootargs: "console=ttyAMA0", file: "guest1.bin" }
     dt:     { addr: "160MiB", file: "guest1.dtb" }
-
+    ramdisk: { addr: "168MiB", file: "guest1.cpio.gz" }

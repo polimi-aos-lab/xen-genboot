@@ -1,0 +1,23 @@
+media:
+  type: mmc
+  number: 2
+dt:
+  file: board.dtb
+  addr: "24MiB"
+xen:
+  file: xen.bin
+  addr: "16MiB"
+domains:
+  guest:
+    params:
+      memory: "32MiB"
+      cpus: 2
+    kernel:
+      addr: "32MiB"
+      file: guest_kernel.bin
+    dt:
+      addr: "40MiB"
+      file: guest.dtb
+    ramdisk:
+      addr: "48MiB"
+      file: guest.cpio.gz

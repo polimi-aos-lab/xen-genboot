@@ -113,6 +113,14 @@ def generate_uboot_script(config, directory):
         if domain_dt_file:
             script_lines.append(f"fatload {media_type} {media_number} {domain_dt_addr} {domain_dt_file}")
 
+        # Load domain ramdisk
+        ramdisk = domain.get('ramdisk', {})
+        ramdisk_file = ramdisk.get('file')
+        ramdisk_addr = format_hex(parse_address_or_size(ramdisk.get('addr', '0x05000000')))
+
+        if ramdisk_file:
+            script_lines.append(f"fatload {media_type} {media_number} {ramdisk_addr} {ramdisk_file}")
+
     # FDT operations
     script_lines.append(f"fdt addr {dt_addr}")
     script_lines.append("fdt resize 2048")
@@ -210,13 +218,27 @@ def generate_uboot_script(config, directory):
         domain_dt_file = domain_dt.get('file')
 
         if domain_dt_file:
-            script_lines.append(f"fdt mknod /chosen/domU{i} module@{domain_dt_addr_hex}")
+            script_lines.append(f"fdt mknode /chosen/domU{i} module@{domain_dt_addr_hex}")
             script_lines.append(f'fdt set /chosen/domU{i}/module@{domain_dt_addr_hex} compatible "multiboot,device-tree" "multiboot,module"')
 
             # Calculate device tree size
             dt_size = get_file_size(directory, domain_dt_file)
             script_lines.append(f"fdt set /chosen/domU{i}/module@{domain_dt_addr_hex} reg <{domain_dt_addr_hex} {dt_size}>")
             script_lines.append("")
+            script_lines.append("")
+
+        # Create ramdisk module
+        ramdisk = domain.get('ramdisk', {})
+        ramdisk_addr_value = parse_address_or_size(ramdisk.get('addr', '0x05000000'))
+        ramdisk_addr_hex = f"0x{ramdisk_addr_value:08x}"
+        ramdisk_file = ramdisk.get('file')
+
+        if ramdisk_file:
+            script_lines.append(f"fdt mknode /chosen/domU{i} module@{ramdisk_addr_hex}")
+            script_lines.append(f'fdt set /chosen/domU{i}/module@{ramdisk_addr_hex} compatible "multiboot,ramdisk" "multiboot,module"')
+
+            ramdisk_size = get_file_size(directory, ramdisk_file)
+            script_lines.append(f"fdt set /chosen/domU{i}/module@{ramdisk_addr_hex} reg <{ramdisk_addr_hex} 0x{ramdisk_size:x}>")
             script_lines.append("")
 
     # Final commands

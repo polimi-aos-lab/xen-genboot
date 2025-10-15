@@ -26,7 +26,7 @@ Key fields in `example.yaml`:
 - `media`: physical boot device target (type/number) for all `fatload` commands.
 - `dt`: device tree blob to load and its target address.
 - `xen`: Xen binary path, boot arguments, load address, and optional dom0-less extras such as `colors` (first value applies to Xen, additional values to other domains; use `none` as the first value to skip Xen coloring) and `bootonly` (limit generated boot commands to selected domains instead of all).
-- `domains`: per-domain entries with memory/CPU params plus kernel/device tree artifacts and load addresses.
+- `domains`: per-domain entries with memory/CPU params plus kernel/device tree artifacts and load addresses. Each domain may also provide a `ramdisk` (file/address) that is exposed as a `multiboot,ramdisk` module.
 
 ### Test
 
