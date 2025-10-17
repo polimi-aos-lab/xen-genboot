@@ -10,6 +10,7 @@ xen:
   addr: "16MiB"
   colors: ["0-1", "2-5", "2-5", "6-7", "6-7"]
   bootonly: ["u1", "u2"]
+  stdout: "serial0"
 domains:
   u1:
     params: { memory: "10KiB", cpus: 1, vpl011: true }

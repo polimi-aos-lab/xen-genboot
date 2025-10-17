@@ -41,6 +41,7 @@ def test_genboot_produces_expected_script(tmp_path):
         "fdt addr 0x02000000",
         "fdt resize 2048",
         "",
+        'fdt set /chosen stdout-path "serial0"',
         'fdt set /chosen xen,xen-bootargs "bootscrub=0 llc-coloring=on xen-llc-colors=0-1"',
         "",
         "",

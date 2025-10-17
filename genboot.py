@@ -130,6 +130,10 @@ def generate_uboot_script(config, directory):
     xen_bootargs = xen.get('bootargs', '')
     xen_colors = xen.get('colors')
 
+    xen_stdout = xen.get('stdout')
+    if xen_stdout:
+        script_lines.append(f'fdt set /chosen stdout-path "{xen_stdout}"');
+
     # Build bootargs string
     bootargs_parts = []
     if xen_bootargs:
@@ -179,6 +183,9 @@ def generate_uboot_script(config, directory):
         # Set vpl011 if enabled
         if params.get('vpl011', False):
             script_lines.append(f"fdt set /chosen/domU{i} vpl011")
+        
+        if params.get('vsbi_uart', False):
+            script_lines.append(f"fdt set /chosen/domU{i} vsbi_uart")
 
         # Create kernel module
         kernel = domain.get('kernel', {})
