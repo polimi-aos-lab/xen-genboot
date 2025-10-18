@@ -198,12 +198,8 @@ def generate_uboot_script(config, directory):
         # Set LLC colors for domain if available in xen config
         # Use colors starting from index 1 (skip first element which might be "none")
         if xen_colors and len(xen_colors) > 1:
-            # Find first valid color range after index 0
-            for color_idx in range(1, len(xen_colors)):
-                if xen_colors[color_idx] != "none":
-                    domain_colors = xen_colors[color_idx]
-                    script_lines.append(f'fdt set /chosen/domU{i} llc-colors "{domain_colors}"')
-                    break
+            if len(xen_colors) >= i and xen_colors[i] != "none":
+                script_lines.append(f'fdt set /chosen/domU{i} llc-colors "{xen_colors[i]}"')
 
         script_lines.append(f'fdt set /chosen/domU{i}/module@{kernel_addr_hex} compatible "multiboot,kernel" "multiboot,module"')
 
