@@ -250,7 +250,8 @@ def generate_uboot_script(config, directory):
 
     # Final commands
     script_lines.append("fdt print /chosen")
-    script_lines.append(f"booti {xen_addr} - {dt_addr}")
+    boot_command = "bootm" if xen_file and str(xen_file).lower().endswith(".uimage") else "booti"
+    script_lines.append(f"{boot_command} {xen_addr} - {dt_addr}")
 
     return "\n".join(script_lines)
 
