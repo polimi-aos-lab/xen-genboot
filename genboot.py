@@ -149,6 +149,10 @@ def generate_uboot_script(config, directory):
         if len(xen_colors) > 0 and xen_colors[0] != "none":
             bootargs_parts.append(f"xen-llc-colors={xen_colors[0]}")
 
+    bootargs_parts.append("loglvl=all guest_loglvl=all")
+    bootargs_parts.append('llc-size=1024 llc-nr-ways=16')
+    bootargs_parts.append('buddy-alloc-size=256')
+
     if bootargs_parts:
         full_bootargs = " ".join(bootargs_parts)
         script_lines.append(f'fdt set /chosen xen,xen-bootargs "{full_bootargs}"')
