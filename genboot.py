@@ -261,6 +261,7 @@ def generate_uboot_script(config, directory):
             script_lines.append("")
 
     # Final commands
+    script_lines.append(f"sleep 5")
     script_lines.append("fdt print /chosen")
     script_lines.append(f"booti {xen_addr} - {dt_addr}")
 
