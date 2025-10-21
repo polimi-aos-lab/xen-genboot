@@ -66,6 +66,7 @@ def generate_uboot_script(config, directory):
     # Load media configuration
     media = config.get('media', {})
     media_type = media.get('type', 'mmc')
+    use_serial = media.get('use_serial', False)
     media_number = media.get('number', 0)
 
     # Load Xen binary
@@ -105,7 +106,7 @@ def generate_uboot_script(config, directory):
         kernel_addr = format_hex(parse_address_or_size(kernel.get('addr', '0x03000000')))
 
         if kernel_file:
-            if media_type == 'serial':
+            if use_serial:
                 script_lines.append(f"loadb {kernel_addr} # {kernel_file}")
             else:
                 script_lines.append(f"fatload {media_type} {media_number} {kernel_addr} {kernel_file}")
@@ -116,7 +117,7 @@ def generate_uboot_script(config, directory):
         domain_dt_addr = format_hex(parse_address_or_size(domain_dt.get('addr', '0x04000000')))
 
         if domain_dt_file:
-            if media_type == 'serial':
+            if use_serial:
                 script_lines.append(f"loadb {domain_dt_addr} # {domain_dt_file}")
             else:
                 script_lines.append(f"fatload {media_type} {media_number} {domain_dt_addr} {domain_dt_file}")
@@ -127,7 +128,7 @@ def generate_uboot_script(config, directory):
         ramdisk_addr = format_hex(parse_address_or_size(ramdisk.get('addr', '0x05000000')))
 
         if ramdisk_file:
-            if media_type == 'serial':
+            if use_serial:
                 script_lines.append(f"loadb {ramdisk_addr} # {ramdisk_file}")
             else:
                 script_lines.append(f"fatload {media_type} {media_number} {ramdisk_addr} {ramdisk_file}")
