@@ -74,6 +74,7 @@ def generate_uboot_script(config, directory):
     xen_addr = format_hex(parse_address_or_size(xen.get('addr', '0x01000000')))
 
     if xen_file:
+        # xen is always load using the microsd card 
         script_lines.append(f"fatload {media_type} {media_number} {xen_addr} {xen_file}")
 
     # Load device tree
@@ -82,6 +83,7 @@ def generate_uboot_script(config, directory):
     dt_addr = format_hex(parse_address_or_size(dt.get('addr', '0x02000000')))
 
     if dt_file:
+        # dtb is always load usign the microsd card
         script_lines.append(f"fatload {media_type} {media_number} {dt_addr} {dt_file}")
 
     # Determine which domains to boot
@@ -103,7 +105,10 @@ def generate_uboot_script(config, directory):
         kernel_addr = format_hex(parse_address_or_size(kernel.get('addr', '0x03000000')))
 
         if kernel_file:
-            script_lines.append(f"fatload {media_type} {media_number} {kernel_addr} {kernel_file}")
+            if media_type == 'serial':
+                script_lines.append(f"loadb {kernel_addr} # {kernel_file}")
+            else:
+                script_lines.append(f"fatload {media_type} {media_number} {kernel_addr} {kernel_file}")
 
         # Load domain device tree
         domain_dt = domain.get('dt', {})
@@ -111,7 +116,10 @@ def generate_uboot_script(config, directory):
         domain_dt_addr = format_hex(parse_address_or_size(domain_dt.get('addr', '0x04000000')))
 
         if domain_dt_file:
-            script_lines.append(f"fatload {media_type} {media_number} {domain_dt_addr} {domain_dt_file}")
+            if media_type == 'serial':
+                script_lines.append(f"loadb {domain_dt_addr} # {domain_dt_file}")
+            else:
+                script_lines.append(f"fatload {media_type} {media_number} {domain_dt_addr} {domain_dt_file}")
 
         # Load domain ramdisk
         ramdisk = domain.get('ramdisk', {})
@@ -119,7 +127,10 @@ def generate_uboot_script(config, directory):
         ramdisk_addr = format_hex(parse_address_or_size(ramdisk.get('addr', '0x05000000')))
 
         if ramdisk_file:
-            script_lines.append(f"fatload {media_type} {media_number} {ramdisk_addr} {ramdisk_file}")
+            if media_type == 'serial':
+                script_lines.append(f"loadb {ramdisk_addr} # {ramdisk_file}")
+            else:
+                script_lines.append(f"fatload {media_type} {media_number} {ramdisk_addr} {ramdisk_file}")
 
     # FDT operations
     script_lines.append(f"fdt addr {dt_addr}")
