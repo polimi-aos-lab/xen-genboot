@@ -162,8 +162,8 @@ def generate_uboot_script(config, directory):
             bootargs_parts.append(f"xen-llc-colors={xen_colors[0]}")
 
     bootargs_parts.append("loglvl=all guest_loglvl=all")
-    bootargs_parts.append('llc-size=1024 llc-nr-ways=16')
-    bootargs_parts.append('buddy-alloc-size=256')
+    bootargs_parts.append(f'llc-size={xen.get('llc-size', 1024)} llc-nr-ways={xen.get('llc-ways', 16)}')
+    bootargs_parts.append(f'buddy-alloc-size={xen.get('buddy-size', 256)}')
 
     if bootargs_parts:
         full_bootargs = " ".join(bootargs_parts)
