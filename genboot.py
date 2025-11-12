@@ -66,6 +66,7 @@ def generate_uboot_script(config, directory):
     # Load media configuration
     media = config.get('media', {})
     media_type = media.get('type', 'mmc')
+    use_serial = media.get('use_serial', False)
     media_number = media.get('number', 0)
 
     # Load Xen binary
@@ -74,6 +75,7 @@ def generate_uboot_script(config, directory):
     xen_addr = format_hex(parse_address_or_size(xen.get('addr', '0x01000000')))
 
     if xen_file:
+        # xen is always load using the microsd card 
         script_lines.append(f"fatload {media_type} {media_number} {xen_addr} {xen_file}")
 
     # Load device tree
@@ -82,6 +84,7 @@ def generate_uboot_script(config, directory):
     dt_addr = format_hex(parse_address_or_size(dt.get('addr', '0x02000000')))
 
     if dt_file:
+        # dtb is always load usign the microsd card
         script_lines.append(f"fatload {media_type} {media_number} {dt_addr} {dt_file}")
 
     # Determine which domains to boot
@@ -103,7 +106,10 @@ def generate_uboot_script(config, directory):
         kernel_addr = format_hex(parse_address_or_size(kernel.get('addr', '0x03000000')))
 
         if kernel_file:
-            script_lines.append(f"fatload {media_type} {media_number} {kernel_addr} {kernel_file}")
+            if use_serial:
+                script_lines.append(f"loadb {kernel_addr} # {kernel_file}")
+            else:
+                script_lines.append(f"fatload {media_type} {media_number} {kernel_addr} {kernel_file}")
 
         # Load domain device tree
         domain_dt = domain.get('dt', {})
@@ -111,7 +117,10 @@ def generate_uboot_script(config, directory):
         domain_dt_addr = format_hex(parse_address_or_size(domain_dt.get('addr', '0x04000000')))
 
         if domain_dt_file:
-            script_lines.append(f"fatload {media_type} {media_number} {domain_dt_addr} {domain_dt_file}")
+            if use_serial:
+                script_lines.append(f"loadb {domain_dt_addr} # {domain_dt_file}")
+            else:
+                script_lines.append(f"fatload {media_type} {media_number} {domain_dt_addr} {domain_dt_file}")
 
         # Load domain ramdisk
         ramdisk = domain.get('ramdisk', {})
@@ -119,7 +128,10 @@ def generate_uboot_script(config, directory):
         ramdisk_addr = format_hex(parse_address_or_size(ramdisk.get('addr', '0x05000000')))
 
         if ramdisk_file:
-            script_lines.append(f"fatload {media_type} {media_number} {ramdisk_addr} {ramdisk_file}")
+            if use_serial:
+                script_lines.append(f"loadb {ramdisk_addr} # {ramdisk_file}")
+            else:
+                script_lines.append(f"fatload {media_type} {media_number} {ramdisk_addr} {ramdisk_file}")
 
     # FDT operations
     script_lines.append(f"fdt addr {dt_addr}")
@@ -148,6 +160,15 @@ def generate_uboot_script(config, directory):
         # Only add xen-llc-colors if first element is not "none"
         if len(xen_colors) > 0 and xen_colors[0] != "none":
             bootargs_parts.append(f"xen-llc-colors={xen_colors[0]}")
+
+    llc_size = xen.get("llc-size")
+    llc_n_ways = xen.get("llc-ways")
+    buddy_allocator = xen.get("buddy-size")
+
+    if llc_size and llc_n_ways:
+        bootargs_parts.append(f'llc-size={llc_size} llc-nr-ways={llc_n_ways}')
+    if buddy_allocator:
+        bootargs_parts.append(f'buddy-alloc-size={buddy_allocator}')
 
     if bootargs_parts:
         full_bootargs = " ".join(bootargs_parts)
@@ -198,12 +219,8 @@ def generate_uboot_script(config, directory):
         # Set LLC colors for domain if available in xen config
         # Use colors starting from index 1 (skip first element which might be "none")
         if xen_colors and len(xen_colors) > 1:
-            # Find first valid color range after index 0
-            for color_idx in range(1, len(xen_colors)):
-                if xen_colors[color_idx] != "none":
-                    domain_colors = xen_colors[color_idx]
-                    script_lines.append(f'fdt set /chosen/domU{i} llc-colors "{domain_colors}"')
-                    break
+            if len(xen_colors) >= i and xen_colors[i] != "none":
+                script_lines.append(f'fdt set /chosen/domU{i} llc-colors "{xen_colors[i]}"')
 
         script_lines.append(f'fdt set /chosen/domU{i}/module@{kernel_addr_hex} compatible "multiboot,kernel" "multiboot,module"')
 
@@ -249,6 +266,13 @@ def generate_uboot_script(config, directory):
             script_lines.append("")
 
     # Final commands
+    
+    # If the tests are automated, it’s helpful to delay the ‘chosen’ node message 
+    # a bit so you can open the UART connection and not miss it.
+    additional_sleep = media.get('sleep', 0)
+    if additional_sleep != 0:
+        script_lines.append(f"sleep {int(additional_sleep)}")
+
     script_lines.append("fdt print /chosen")
     boot_command = "bootm" if xen_file and str(xen_file).lower().endswith(".uimage") else "booti"
     script_lines.append(f"{boot_command} {xen_addr} - {dt_addr}")
