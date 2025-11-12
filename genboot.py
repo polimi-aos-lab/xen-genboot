@@ -161,9 +161,14 @@ def generate_uboot_script(config, directory):
         if len(xen_colors) > 0 and xen_colors[0] != "none":
             bootargs_parts.append(f"xen-llc-colors={xen_colors[0]}")
 
-    bootargs_parts.append("loglvl=all guest_loglvl=all")
-    bootargs_parts.append(f'llc-size={xen.get("llc-size", 1024)} llc-nr-ways={xen.get("llc-ways", 16)}')
-    bootargs_parts.append(f'buddy-alloc-size={xen.get("buddy-size", 256)}')
+    llc_size = xen.get("llc-size")
+    llc_n_ways = xen.get("llc-ways")
+    buddy_allocator = xen.get("buddy-size")
+
+    if llc_size and llc_n_ways:
+        bootargs_parts.append(f'llc-size={llc_size} llc-nr-ways={llc_n_ways}')
+    if buddy_allocator:
+        bootargs_parts.append(f'buddy-alloc-size={buddy_allocator}')
 
     if bootargs_parts:
         full_bootargs = " ".join(bootargs_parts)
@@ -261,7 +266,13 @@ def generate_uboot_script(config, directory):
             script_lines.append("")
 
     # Final commands
-    script_lines.append(f"sleep 5")
+    
+    # If the tests are automated, it’s helpful to delay the ‘chosen’ node message 
+    # a bit so you can open the UART connection and not miss it.
+    additional_sleep = media.get('sleep', 0)
+    if additional_sleep != 0:
+        script_lines.append(f"sleep {int(additional_sleep)}")
+
     script_lines.append("fdt print /chosen")
     script_lines.append(f"booti {xen_addr} - {dt_addr}")
 
